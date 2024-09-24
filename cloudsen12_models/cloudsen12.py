@@ -144,16 +144,28 @@ class CDModel(torch.nn.Module):
         Returns:
             uint8 np.array (H, W) with interpretation {0: clear, 1: Thick cloud, 2: thin cloud, 3: cloud shadow}
         """
-        if hasattr(geotensor, "values"):
+        if hasattr(geotensor, "values") and hasattr(geotensor, "transform"):
             tensor = geotensor.values
             transform = geotensor.transform
         else:
             tensor = geotensor
             transform = None
 
+        if isinstance(tensor, np.ndarray):
+            tensor = tensor.astype(np.float32)
+        else:
+            tensor = tensor.to(dtype=torch.float32)
+            
+        if len(tensor.shape) == 4:
+            # extract examples from batches
+            pred = []
+            for i in range(tensor.shape[0]):
+                pred[i] = self.predict(tensor[i])
+            pred = np.stack(pred, axis=0)
+                
+            
         assert tensor.shape[0] == len(self.bands), f"Expected {len(self.bands)} channels found {tensor.shape[0]}"
 
-        tensor = tensor.astype(np.float32)
 
         pred =  padded_predict(tensor, self, 32, self.device)
 
