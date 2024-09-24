@@ -160,8 +160,9 @@ class CDModel(torch.nn.Module):
             # extract examples from batches
             pred = []
             for i in range(tensor.shape[0]):
-                pred[i] = self.predict(tensor[i])
-            pred = np.stack(pred, axis=0)
+                pred.append(self.predict(tensor[i]))
+            pred = torch.stack(pred, axis=0)
+            return pred
                 
             
         assert tensor.shape[0] == len(self.bands), f"Expected {len(self.bands)} channels found {tensor.shape[0]}"
@@ -173,6 +174,8 @@ class CDModel(torch.nn.Module):
             pred = GeoTensor(pred, transform=transform, crs=geotensor.crs,
                              fill_value_default=None)
 
+        if isinstance(pred, np.ndarray):
+            pred = torch.tensor(pred, dtype=torch.uint8)
         return pred
 
 
