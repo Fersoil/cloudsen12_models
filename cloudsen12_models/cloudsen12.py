@@ -175,7 +175,7 @@ class CDModel(torch.nn.Module):
                              fill_value_default=None)
 
         if isinstance(pred, np.ndarray):
-            pred = torch.tensor(pred, dtype=torch.uint8)
+            pred = torch.tensor(pred, dtype=torch.int8)
         return pred
 
 
